@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snowflake generator</title>
+  </head>
+  <body>
+    <script
+      data-name="BMC-Widget"
+      data-cfasync="false"
+      src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
+      data-id="jackcrane"
+      data-description="Support me on Buy me a coffee!"
+      data-message="If this tool helped, please consider buying me a coffee!"
+      data-color="#FF813F"
+      data-position="Right"
+      data-x_margin="18"
+      data-y_margin="18"
+    ></script>
+    <button onClick="generate()">Generate snowflake</button><br />
+    <label for="snowflakeSize">Snowflake size/complexity:</label>
+    <input
+      type="number"
+      value="50"
+      id="snowflakeSize"
+      onkeyup="generate()"
+    /><br />
+    <label for="svgpadding">SVG padding:</label>
+    <input
+      type="number"
+      value="10"
+      id="svgpadding"
+      onkeyup="generate()"
+    /><br />
+    <label for="circlepadding">Circle padding:</label>
+    <input type="number" value="8" onkeyup="generate()" id="circlepadding" />
+    <button style="display: none" id="download" onClick="exportSvg()">
+      Download snowflake
+    </button>
+    <script src="./build/snowflake-generator.js"></script>
+    <script>
+      let domE;
+      const generate = () => {
+        Array.from(document.getElementsByTagName("svg")).forEach((e) =>
+          e.remove()
+        );
+        let size = parseFloat(document.getElementById("snowflakeSize").value);
+        let padding = parseFloat(document.getElementById("svgpadding").value);
+        let circlepadding = parseFloat(
+          document.getElementById("circlepadding").value
+        );
+        var snowflake = SnowflakeGenerator.generate(size);
+        domE = snowflake.toSVGPath().toDomElement();
+        const domEInnerHTML = domE.innerHTML;
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.innerHTML = domEInnerHTML;
+        domE.innerHTML = "";
+        domE.appendChild(g);
+
+        const g2 = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        domE.setAttribute(
+          "viewBox",
+          `-${size + padding} -${size + padding} ${(size + padding) * 2} ${
+            (size + padding) * 2
+          }`
+        );
+        domE.style.maxHeight = "70vh";
+        var newElement = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "circle"
+        ); //Create a path in SVG's namespace
+        // newElement.setAttribute("d", "M 0 0 L 10 10"); //Set path's data
+        newElement.setAttribute("cx", "0");
+        newElement.setAttribute("cy", "0");
+        newElement.setAttribute("r", size + circlepadding);
+        newElement.style.stroke = "#444"; //Set stroke colour
+        newElement.style.strokeWidth = "1.8px"; //Set stroke width
+        newElement.style.fill = "none"; //Set fill colour
+        g2.appendChild(newElement);
+        domE.appendChild(g2);
+        document.body.appendChild(domE);
+        document.getElementById("download").style.display = "block";
+      };
+
+      const exportSvg = () => {
+        // Export svg:
+        const html = domE.outerHTML;
+        const a = document.createElement("a");
+        a.href = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(html);
+        a.download = "snowflake.svg";
+        a.click();
+      };
+    </script>
+  </body>
+</html>
