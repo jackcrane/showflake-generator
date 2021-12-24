@@ -5,6 +5,19 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Snowflake generator</title>
+    <!-- 100% privacy friendly analytics -->
+    <script
+      data-collect-dnt="true"
+      async
+      defer
+      src="https://scripts.simpleanalyticscdn.com/latest.js"
+    ></script>
+    <noscript
+      ><img
+        src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true"
+        alt=""
+        referrerpolicy="no-referrer-when-downgrade"
+    /></noscript>
   </head>
   <body>
     <script
@@ -27,6 +40,8 @@
       id="snowflakeSize"
       onkeyup="generate()"
     /><br />
+    <label for="scale">Scale: (in centimeters)</label>
+    <input type="number" value="8" id="scale" onkeyup="generate()" /><br />
     <label for="svgpadding">SVG padding:</label>
     <input
       type="number"
@@ -34,6 +49,17 @@
       id="svgpadding"
       onkeyup="generate()"
     /><br />
+    <label for="hole">Should a hole be cut (for hanging)</label>
+    <input type="checkbox" id="hole" onclick="generate()" checked /><br />
+    <label for="holepadding">Hole padding:</label>
+    <input
+      type="number"
+      value="2"
+      id="holepadding"
+      onkeyup="generate()"
+    /><br />
+    <label for="holesize">Hole Size:</label>
+    <input type="number" value="5" id="holesize" onkeyup="generate()" /><br />
     <label for="circlepadding">Circle padding:</label>
     <input type="number" value="8" onkeyup="generate()" id="circlepadding" />
     <button style="display: none" id="download" onClick="exportSvg()">
@@ -47,10 +73,16 @@
           e.remove()
         );
         let size = parseFloat(document.getElementById("snowflakeSize").value);
+        let hole = document.getElementById("hole").checked;
+        let hole_size = parseFloat(document.getElementById("holesize").value);
+        let hole_padding = -parseFloat(
+          document.getElementById("holepadding").value
+        );
         let padding = parseFloat(document.getElementById("svgpadding").value);
         let circlepadding = parseFloat(
           document.getElementById("circlepadding").value
         );
+        let scale = parseFloat(document.getElementById("scale").value);
         var snowflake = SnowflakeGenerator.generate(size);
         domE = snowflake.toSVGPath().toDomElement();
         const domEInnerHTML = domE.innerHTML;
@@ -67,6 +99,8 @@
             (size + padding) * 2
           }`
         );
+        domE.setAttribute("width", `${scale}cm`);
+        domE.setAttribute("height", `${scale}cm`);
         domE.style.maxHeight = "70vh";
         var newElement = document.createElementNS(
           "http://www.w3.org/2000/svg",
@@ -80,6 +114,19 @@
         newElement.style.strokeWidth = "1.8px"; //Set stroke width
         newElement.style.fill = "none"; //Set fill colour
         g2.appendChild(newElement);
+        if (hole) {
+          var hangHole = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+          ); //Create a path in SVG's namespace
+          hangHole.setAttribute("cy", -(size + hole_padding));
+          hangHole.setAttribute("cx", "0");
+          hangHole.setAttribute("r", hole_size);
+          hangHole.style.stroke = "#444"; //Set stroke colour
+          hangHole.style.strokeWidth = "1.8px"; //Set stroke width
+          hangHole.style.fill = "none"; //Set fill colour
+          g2.appendChild(hangHole);
+        }
         domE.appendChild(g2);
         document.body.appendChild(domE);
         document.getElementById("download").style.display = "block";
@@ -93,7 +140,14 @@
         a.download = "snowflake.svg";
         a.click();
       };
+
+      document.addEventListener("keyup", (e) => {
+        if (e.keyCode === 32) {
+          generate();
+        }
+      });
+      generate();
     </script>
   </body>
-  Created by Jack Crane (jack@jackcrane.rocks)
+  <br />Created by Jack Crane (jack@jackcrane.rocks)<br />
 </html>
